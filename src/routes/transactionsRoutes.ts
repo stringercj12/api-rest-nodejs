@@ -1,10 +1,10 @@
 import { FastifyInstance } from 'fastify'
-import knex from 'knex'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
 import { checkSessionIdExists } from '../middlewares/check-session-id-exists.'
+import { knex } from '../database'
 
-export async function transacationsRoutes(app: FastifyInstance) {
+export async function transactionsRoutes(app: FastifyInstance) {
 
   app.get('/', { preHandler: [checkSessionIdExists] }, async (request, reply) => {
 
@@ -50,7 +50,7 @@ export async function transacationsRoutes(app: FastifyInstance) {
     }
   })
 
-  app.get('/', async (request, reply) => {
+  app.post('/', async (request, reply) => {
     const createTransactionBodySchema = z.object({
       title: z.string(),
       amount: z.number(),
@@ -66,20 +66,18 @@ export async function transacationsRoutes(app: FastifyInstance) {
     if (!sessionId) {
       sessionId = randomUUID()
 
-      reply.cookie('sessionId', sessionId, {
+      reply.setCookie('sessionId', sessionId, {
         path: '/',
         maxAge: 60 * 60 * 24 * 7 // 7 days
       })
     }
 
-    await knex('transactions')
-      .insert({
-        id: crypto.randomUUID(),
-        title,
-        amount: type === 'credit' ? amount : amount * -1,
-        session_id: sessionId
-      })
-      .returning('*')
+    await knex('transactions').insert({
+      id: randomUUID(),
+      title,
+      amount: type === 'credit' ? amount : amount * -1,
+      session_id: sessionId
+    })
 
     return reply.status(201).send()
   })

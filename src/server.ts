@@ -7,7 +7,9 @@ import { transacationsRoutes } from './routes/transactions';
 
 const app = fastify()
 
-app.register(transacationsRoutes)
+app.register(transacationsRoutes, {
+  prefix: 'transactions'
+})
 
 app.listen({
   port: env.PORT,

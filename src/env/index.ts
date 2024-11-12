@@ -3,10 +3,8 @@ import { z } from 'zod'
 
 
 if (process.env.NODE_ENV === 'test') {
-  console.log('aquio')
   config({ path: '.env.test' })
 } else {
-  console.log('alio')
   config()
 }
 
@@ -14,7 +12,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
   DATABASE_CLIENT: z.enum(['sqlite', 'pg']).default('sqlite'),
   DATABASE_URL: z.string(),
-  PORT: z.number().default(3333),
+  PORT: z.coerce.number().default(3333),
 })
 
 const _env = envSchema.safeParse(process.env)
